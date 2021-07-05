@@ -1,0 +1,22 @@
+version: '3.1'
+services: 
+  mysql:
+    image: mysql
+    container_name: msql
+    command: mysqld --user=root
+    ports:
+      - 3333:3306
+    environment:
+      - MYSQL_DATABASE=go-ywd-test
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=password
+      - MYSQL_ROOT_PASSWORD=root
+    restart: always
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8089:8080
+    links: 
+      - mysql
