@@ -1,0 +1,3 @@
+CREATE TABLE IF NOT EXISTS test (
+  name_sql VARCHAR(255)
+);

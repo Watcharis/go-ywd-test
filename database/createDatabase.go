@@ -8,7 +8,7 @@ import (
 
 func CreateDb(db *gorm.DB) {
 
-	txRoles := db.Exec(
+	sqlRoles := db.Exec(
 		`
 			CREATE TABLE IF NOT EXISTS roles (
 				role_id varchar(255) NOT NULL,
@@ -18,12 +18,12 @@ func CreateDb(db *gorm.DB) {
 			)
 		`,
 	)
-	if txRoles.Error != nil {
-		fmt.Printf("error : %s", txRoles.Error)
-		panic(txRoles.Error)
+	if sqlRoles.Error != nil {
+		fmt.Printf("error : %s", sqlRoles.Error)
+		panic(sqlRoles.Error)
 	}
 
-	txUser := db.Exec(
+	sqlUser := db.Exec(
 		`
 			CREATE TABLE IF NOT EXISTS users (
 				user_id varchar(255) NOT NULL ,
@@ -39,12 +39,12 @@ func CreateDb(db *gorm.DB) {
 		`,
 	)
 
-	if txUser.Error != nil {
-		fmt.Printf("error : %s", txUser.Error)
-		panic(txUser.Error)
+	if sqlUser.Error != nil {
+		fmt.Printf("error : %s", sqlUser.Error)
+		panic(sqlUser.Error)
 	}
 
-	txProduct := db.Exec(
+	sqlProduct := db.Exec(
 		`
 		CREATE TABLE IF NOT EXISTS products (
 			product_id varchar(255) NOT NULL,
@@ -56,12 +56,12 @@ func CreateDb(db *gorm.DB) {
 		`,
 	)
 
-	if txProduct.Error != nil {
-		fmt.Printf("error : %s", txProduct.Error)
-		panic(txProduct.Error)
+	if sqlProduct.Error != nil {
+		fmt.Printf("error : %s", sqlProduct.Error)
+		panic(sqlProduct.Error)
 	}
 
-	txReceipt := db.Exec(
+	sqlReceipt := db.Exec(
 		`
 		CREATE TABLE IF NOT EXISTS receipt (
 			receipt_id varchar(255) NOT NULL ,
@@ -77,12 +77,12 @@ func CreateDb(db *gorm.DB) {
 	`,
 	)
 
-	if txReceipt.Error != nil {
-		fmt.Printf("error : %s", txReceipt.Error)
-		panic(txReceipt.Error)
+	if sqlReceipt.Error != nil {
+		fmt.Printf("error : %s", sqlReceipt.Error)
+		panic(sqlReceipt.Error)
 	}
 
-	txUserProduct := db.Exec(
+	sqlUserProduct := db.Exec(
 		`
 		CREATE TABLE IF NOT EXISTS user_product (
 			user_product_id varchar(255) NOT NULL ,
@@ -96,9 +96,25 @@ func CreateDb(db *gorm.DB) {
 		`,
 	)
 
-	if txUserProduct.Error != nil {
-		fmt.Printf("error : %s", txUserProduct.Error)
-		panic(txUserProduct.Error)
+	if sqlUserProduct.Error != nil {
+
+		fmt.Printf("error : %s", sqlUserProduct.Error)
+		panic(sqlUserProduct.Error)
 	}
+
+	// sqlTest := db.Exec(
+	// 	`
+	// 	CREATE TABLE IF NOT EXISTS test (
+	// 		id varchar(255) NOT NULL,
+	// 		name varchar(255) NOT NULL,
+	// 		PRIMARY KEY(id),
+	// 	)
+	// 	`,
+	// )
+
+	// if sqlTest.Error != nil {
+	// 	fmt.Printf("error : %s", sqlTest.Error)
+	// 	panic(sqlTest.Error)
+	// }
 
 }

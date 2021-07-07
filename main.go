@@ -55,7 +55,7 @@ func main() {
 		return c.String(http.StatusOK, "Hello, World!")
 	})
 
-	routerPublich := e.Group("/public")
+	routerPublich := e.Group("/publice")
 
 	_userrepository := userRepository.NewUserRepository(db)
 	_userservice := userService.NewUserService(_userrepository)

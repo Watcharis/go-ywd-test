@@ -18,17 +18,17 @@ type jwtCustomClaims struct {
 	jwt.StandardClaims
 }
 
-type userrepository struct {
+type Usersrepository struct {
 	repository users.UserRepository
 }
 
-func NewUserService(repository users.UserRepository) *userrepository {
-	return &userrepository{
+func NewUserService(repository users.UserRepository) *Usersrepository {
+	return &Usersrepository{
 		repository: repository,
 	}
 }
 
-func (r *userrepository) Register(ctx echo.Context) error {
+func (r *Usersrepository) Register(ctx echo.Context) error {
 
 	bodyUser := new(users.UserRequestRegister)
 
@@ -64,7 +64,7 @@ func (r *userrepository) Register(ctx echo.Context) error {
 	return ctx.JSON(http.StatusBadRequest, model.JsonResponse{Message: "User is exists", Status: "fail", Data: ""})
 }
 
-func (r *userrepository) Login(ctx echo.Context) error {
+func (r *Usersrepository) Login(ctx echo.Context) error {
 
 	bodyUser := new(users.UserRequestLogin)
 

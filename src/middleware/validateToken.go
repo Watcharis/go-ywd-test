@@ -40,8 +40,8 @@ func CheckToken(next echo.HandlerFunc) echo.HandlerFunc {
 
 				claims := validateToken.Claims
 
-				tmp, exists := json.Marshal(claims)
-				fmt.Println("exists :", exists)
+				tmp, _ := json.Marshal(claims)
+				// fmt.Println("exists :", exists)
 
 				var tokenClaim jwtCustomClaims
 

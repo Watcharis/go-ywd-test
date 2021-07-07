@@ -38,3 +38,18 @@ type UsersCreate struct {
 	DisplayName string `json:"display_name"`
 	RoleId      string `json:"role_id"`
 }
+
+type UserJoinProducts struct {
+	UserProductId string `json:"user_product_id"`
+	UserId        string `json:"user_id"`
+	ProductId     string `json:"product_id"`
+	ProductName   string `json:"product_name"`
+	ProductPoint  string `json:"product_point"`
+}
+
+type UserProduct struct {
+	UserProductId string    `json:"user_product_id"`
+	UserID        string    `json:"user_id"`
+	ProductId     string    `json:"product_id"`
+	CreateDate    time.Time `json:"create_date"`
+}

@@ -60,3 +60,45 @@ func (query *Mysql) ValidateUserLogin(data users.UserRequestLogin) ([]model.User
 	}
 	return users, nil
 }
+
+func (query *Mysql) SumReceiptPoint(userId string) (int16, error) {
+	sqlCommand := `SELECT sum(receipt_point) FROM receipt WHERE user_id=?`
+	var totalReceipt int16
+	if err := query.db.Raw(sqlCommand, userId).Scan(&totalReceipt).Error; err != nil {
+		// has error
+		return 0, err
+	}
+	// no error
+	return totalReceipt, nil
+}
+
+func (query *Mysql) FindProductByid(productId string) ([]model.Product, error) {
+	var products []model.Product
+	if err := query.db.Table("products").Where("product_id=?", productId).Find(&products).Error; err != nil {
+		return nil, err
+	}
+	return products, nil
+}
+
+func (query *Mysql) FindUserProductByUserId(userId string) ([]model.UserJoinProducts, error) {
+	sqlCommand := `
+				SELECT * FROM user_product 
+				LEFT JOIN products ON user_product.product_id = products.product_id
+				WHERE user_product.user_id=?
+				`
+	var userProducts []model.UserJoinProducts
+	if err := query.db.Raw(sqlCommand, userId).Find(&userProducts).Error; err != nil {
+		return nil, err
+	}
+	// fmt.Println("userProducts :", userProducts)
+	return userProducts, nil
+}
+
+func (query *Mysql) InsertUserProduct(data users.UserAndProduct) (string, error) {
+	userProducrId := uuid.NewV4()
+	sqlCommand := `INSERT INTO user_product (user_product_id, user_id, product_id, create_date) VALUES (?, ?, ?, ?)`
+	if err := query.db.Exec(sqlCommand, userProducrId, data.UserId, data.ProductId, time.Now()).Error; err != nil {
+		return "", err
+	}
+	return "insert user product success", nil
+}
