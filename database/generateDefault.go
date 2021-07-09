@@ -76,7 +76,6 @@ func InitDatabase(db *gorm.DB) {
 		if checkRole == "" {
 
 			gennarateRoles := tx.Exec(`INSERT IGNORE INTO roles (role_id, role_name, role_status) values(?, ?, ?)`, role_id, permission, status)
-
 			if gennarateRoles.Error != nil {
 				defer logrus.Errorln("generate error ->", gennarateRoles.Error)
 				tx.Rollback()
@@ -85,12 +84,12 @@ func InitDatabase(db *gorm.DB) {
 
 			status = status - 1
 		} else {
-			fmt.Println(errors.New("duplicate roles in DB"))
+			logrus.Warn("warning db table roles -> duplicate roles in DB")
 		}
 	}
 
+	//TODO Insert Admin
 	getUsers, err := getUserAdminByEmail(db)
-
 	if err != nil {
 		logrus.Errorln("getUserAdminByEmail ->", err.Error())
 	}
@@ -98,9 +97,7 @@ func InitDatabase(db *gorm.DB) {
 	if len(getUsers) > 0 {
 		fmt.Println(errors.New("Users is exists"))
 	} else {
-
 		getRoleId, err := getRoleIdByRoleName(db)
-
 		if err != nil {
 			logrus.Errorln("getRoleByRoleName ->", err.Error())
 		}
@@ -110,7 +107,6 @@ func InitDatabase(db *gorm.DB) {
 			`INSERT IGNORE INTO users (user_id, email, password, phone, display_name, role_id, create_date) values(?, ?, ?, ?, ?, ?, ?)`,
 			uuid.NewV4(), "admin@admin.com", "admin", "0999999999", "admin", getRoleId, currentTime,
 		)
-
 		if createAdmin.Error != nil {
 			defer logrus.Errorln("createAdmin error ->", createAdmin.Error)
 			tx.Rollback()

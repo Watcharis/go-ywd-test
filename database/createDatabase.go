@@ -101,20 +101,4 @@ func CreateDb(db *gorm.DB) {
 		fmt.Printf("error : %s", sqlUserProduct.Error)
 		panic(sqlUserProduct.Error)
 	}
-
-	// sqlTest := db.Exec(
-	// 	`
-	// 	CREATE TABLE IF NOT EXISTS test (
-	// 		id varchar(255) NOT NULL,
-	// 		name varchar(255) NOT NULL,
-	// 		PRIMARY KEY(id),
-	// 	)
-	// 	`,
-	// )
-
-	// if sqlTest.Error != nil {
-	// 	fmt.Printf("error : %s", sqlTest.Error)
-	// 	panic(sqlTest.Error)
-	// }
-
 }

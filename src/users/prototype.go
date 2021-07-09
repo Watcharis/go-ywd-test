@@ -24,7 +24,7 @@ type LoginResponse struct {
 }
 
 type UserAndProduct struct {
-	UserId    string `json:"user_id"`
+	UserId    string `json:"user_id"  validate:"required"`
 	ProductId string `json:"product_id"`
 }
 

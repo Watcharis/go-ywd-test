@@ -25,22 +25,21 @@ func NewReceiptService(repository receipt.ReceiptRepository) *receiptRepository 
 
 func (r *receiptRepository) SendSlip(ctx echo.Context) error {
 
-	bodyReceipt := new(model.ReceiptRequestBody)
+	var bodyReceipt model.ReceiptRequestBody
 
 	// bind data
 	if err := ctx.Bind(bodyReceipt); err != nil {
 		return err
 	}
 
-	// if err := ctx.Validate(bodyReceipt); err != nil {
-	// 	return err
-	// }
+	if err := ctx.Validate(&bodyReceipt); err != nil {
+		return ctx.JSON(http.StatusBadRequest, model.JsonResponse{Message: err.Error(), Status: "fall", Data: ""})
+	}
 
 	fmt.Println("bodyReceipt :", bodyReceipt)
 
 	validateReceiptCode, err := r.repository.FindSlipByReceiptCode(bodyReceipt.ReceiptCode)
 	// fmt.Println("validateReceiptCode :", validateReceiptCode)
-
 	if err != nil {
 		return ctx.JSON(http.StatusBadGateway, model.JsonResponse{Message: err.Error(), Status: "fail", Data: ""})
 	}
@@ -66,6 +65,7 @@ func (r *receiptRepository) SendSlip(ctx echo.Context) error {
 
 func (r *receiptRepository) AdminGetSlip(ctx echo.Context) error {
 	getSlip, err := r.repository.FindAllSlipByStatus()
+	fmt.Println("getSlip :", getSlip)
 
 	if err != nil {
 		return ctx.JSON(http.StatusBadGateway, model.JsonResponse{Message: err.Error(), Status: "fail", Data: ""})
@@ -126,15 +126,10 @@ func (r *receiptRepository) AdminGiveReceiptPoint(ctx echo.Context) error {
 func (r *receiptRepository) GetTotalPointUser(ctx echo.Context) error {
 
 	if userId := ctx.QueryParam("user_id"); userId != "" {
-
 		callSum, err := r.repository.SumReceiptPoint(userId)
-
 		if err != nil {
 			return ctx.JSON(http.StatusBadGateway, model.JsonResponse{Message: err.Error(), Status: "fail", Data: ""})
-
 		}
-		fmt.Println("callSum :", callSum)
-
 		return ctx.JSON(http.StatusOK, model.JsonResponse{Message: "sum point success", Status: "success", Data: callSum})
 	}
 	return ctx.JSON(http.StatusNotFound, model.JsonResponse{Message: "not found user_id"})

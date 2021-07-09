@@ -23,6 +23,10 @@ func CheckToken(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		header := ctx.Request().Header
 		// fmt.Println("header :", header)
+		db, err := database.ConnectMysqlDB()
+		if err != nil {
+			return ctx.JSON(http.StatusBadGateway, model.JsonResponse{Message: err.Error(), Status: "fail", Data: ""})
+		}
 
 		if accesstToken, existsKey := header["Accesstoken"]; existsKey {
 
@@ -31,33 +35,26 @@ func CheckToken(next echo.HandlerFunc) echo.HandlerFunc {
 				validateToken, err := jwt.Parse(token[1], func(*jwt.Token) (interface{}, error) {
 					return []byte("goywdtest"), nil
 				})
+				fmt.Println("validateToken :", validateToken)
 
 				if err != nil {
 					return ctx.JSON(http.StatusUnauthorized, model.JsonResponse{Message: err.Error(), Status: "fail", Data: ""})
 				}
 
-				// fmt.Println("exp :", reflect.TypeOf(validateToken))
-
+				//TODO validate token
 				claims := validateToken.Claims
 
+				//convert data to []byte
 				tmp, _ := json.Marshal(claims)
-				// fmt.Println("exists :", exists)
 
 				var tokenClaim jwtCustomClaims
 
+				//encode []byte to map, slice, array, ....
 				if err := json.Unmarshal(tmp, &tokenClaim); err != nil {
 					return ctx.JSON(http.StatusUnauthorized, model.JsonResponse{Message: err.Error(), Status: "fail", Data: ""})
 				}
-
 				fmt.Println("tokenClaim :", tokenClaim)
 				// fmt.Println("time :", time.Now().Unix())            ###time now
-
-				db, err := database.ConnectMysqlDB()
-				// fmt.Println("db :", db)
-
-				if err != nil {
-					return ctx.JSON(http.StatusBadGateway, model.JsonResponse{Message: err.Error(), Status: "fail", Data: ""})
-				}
 
 				var users []model.Users
 				if err := db.Table("users").Where("email=?", tokenClaim.UserId).Find(&users).Error; err != nil {

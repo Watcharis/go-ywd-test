@@ -19,62 +19,43 @@ func calculateProduct(dataProduct []model.UserJoinProducts) int16 {
 }
 
 func (r *Usersrepository) Exchange(ctx echo.Context) error {
-
-	bodyExchange := new(users.UserAndProduct)
-	// fmt.Println("bodyExchange :", bodyExchange)
+	bodyExchange := users.UserAndProduct{}
+	// bodyExchange := new(users.UserAndProduct)
 
 	if reqbody := ctx.Bind(&bodyExchange); reqbody != nil {
 		return ctx.JSON(http.StatusBadRequest, model.JsonResponse{Message: reqbody.Error(), Status: "fall", Data: ""})
 	}
-	// fmt.Println("bodyExchange :", bodyExchange)
+	if err := ctx.Validate(&bodyExchange); err != nil {
+		return err
+	}
 
+	// fmt.Println("bodyExchange :", bodyExchange)
 	dataExchange := users.UserAndProduct{
 		UserId:    bodyExchange.UserId,
 		ProductId: bodyExchange.ProductId,
 	}
 
+	//TODO query DB
 	totalPoint, err := r.repository.SumReceiptPoint(dataExchange.UserId)
-
-	if err != nil {
-		return ctx.JSON(http.StatusBadGateway, model.JsonResponse{Message: err.Error(), Status: "fail", Data: ""})
-	}
-
 	productPoint, err := r.repository.FindProductByid(dataExchange.ProductId)
-
-	if err != nil {
-		return ctx.JSON(http.StatusBadGateway, model.JsonResponse{Message: err.Error(), Status: "fail", Data: ""})
-	}
-
 	checkExchange, err := r.repository.FindUserProductByUserId(dataExchange.UserId)
-	if err != nil {
-		return ctx.JSON(http.StatusBadGateway, model.JsonResponse{Message: err.Error(), Status: "fail", Data: ""})
-	}
 
-	// fmt.Println("totalPoint :", totalPoint)
-	// fmt.Println("productPoint :", productPoint[0].ProductId)
-	// fmt.Println("checkExchange :", checkExchange)
-
+	//TODO convert string to int16
 	resultProductPoint, err := strconv.Atoi(productPoint[0].ProductPoint)
-	// fmt.Println("resultProductPoint :", resultProductPoint)
-
 	if err != nil {
 		return ctx.JSON(http.StatusBadGateway, model.JsonResponse{Message: err.Error(), Status: "fail", Data: ""})
 	}
 
 	if resultProductPoint > 0 {
 		if len(checkExchange) == 0 {
-
 			if totalPoint > int16(resultProductPoint) {
 				saveUserProduct, err := r.repository.InsertUserProduct(dataExchange)
-
 				if err != nil {
 					return ctx.JSON(http.StatusBadGateway, model.JsonResponse{Message: err.Error(), Status: "fail", Data: ""})
 				}
-
 				if saveUserProduct == "insert user product success" {
 					return ctx.JSON(http.StatusOK, model.JsonResponse{Message: "exchange success", Status: "success", Data: ""})
 				}
-
 			}
 			return ctx.JSON(http.StatusBadGateway, model.JsonResponse{Message: "point not enought exchange fail", Status: "fail", Data: ""})
 		} else {
@@ -96,13 +77,11 @@ func (r *Usersrepository) Exchange(ctx echo.Context) error {
 		}
 	}
 
-	response := map[string]interface{}{
+	return ctx.JSON(http.StatusOK, map[string]interface{}{
 		"message": "product not exists",
 		"status":  "fail",
 		"data":    "",
-	}
-
-	return ctx.JSON(http.StatusOK, response)
+	})
 }
 
 func (r *Usersrepository) UserExchange(ctx echo.Context) error {

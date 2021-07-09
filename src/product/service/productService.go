@@ -20,11 +20,16 @@ func NewProductService(repository product.ProductRepository) *productRepository 
 }
 
 func (r productRepository) AddProduct(ctx echo.Context) error {
-	bodyProduct := new(model.ProductRequest)
+	bodyProduct := model.ProductRequest{}
 
-	if reqbody := ctx.Bind(bodyProduct); reqbody != nil {
+	if reqbody := ctx.Bind(&bodyProduct); reqbody != nil {
 		// fmt.Println("reqbody :", reqbody)
 		return reqbody
+	}
+
+	if err := ctx.Validate(&bodyProduct); err != nil {
+		// fmt.Println("reqbody :", reqbody)
+		return err
 	}
 
 	if bodyProduct.ProductName == "" {
