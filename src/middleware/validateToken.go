@@ -88,6 +88,7 @@ func RejectRoleUnderAdmin(next echo.HandlerFunc) echo.HandlerFunc {
 		roleId := ctx.Get("role_id")
 
 		// call db
+
 		db, err := database.ConnectMysqlDB()
 		// fmt.Println("db :", db)
 
