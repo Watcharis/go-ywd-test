@@ -8,16 +8,12 @@ import (
 	"time"
 	"watcharis/ywd-test/database"
 	"watcharis/ywd-test/model"
+	claimsUsers "watcharis/ywd-test/src/users/service"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
+	"github.com/sirupsen/logrus"
 )
-
-type jwtCustomClaims struct {
-	UserId string `json:"user_id"`
-	RoleId string `json:"role_id"`
-	jwt.StandardClaims
-}
 
 func CheckToken(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
@@ -32,12 +28,14 @@ func CheckToken(next echo.HandlerFunc) echo.HandlerFunc {
 
 			if token := strings.Split(accesstToken[0], " "); len(token) == 2 {
 
+				// JWT Parse() จะทำการ validate token ที่เข้ามาให้
 				validateToken, err := jwt.Parse(token[1], func(*jwt.Token) (interface{}, error) {
 					return []byte("goywdtest"), nil
 				})
 				fmt.Println("validateToken :", validateToken)
 
 				if err != nil {
+					logrus.Errorln("err validate Token ->", err.Error())
 					return ctx.JSON(http.StatusUnauthorized, model.JsonResponse{Message: err.Error(), Status: "fail", Data: ""})
 				}
 
@@ -47,7 +45,7 @@ func CheckToken(next echo.HandlerFunc) echo.HandlerFunc {
 				//convert data to []byte
 				tmp, _ := json.Marshal(claims)
 
-				var tokenClaim jwtCustomClaims
+				var tokenClaim claimsUsers.Claims
 
 				//encode []byte to map, slice, array, ....
 				if err := json.Unmarshal(tmp, &tokenClaim); err != nil {
@@ -57,7 +55,7 @@ func CheckToken(next echo.HandlerFunc) echo.HandlerFunc {
 				// fmt.Println("time :", time.Now().Unix())            ###time now
 
 				var users []model.Users
-				if err := db.Table("users").Where("email=?", tokenClaim.UserId).Find(&users).Error; err != nil {
+				if err := db.Table("users").Where("email=?", tokenClaim.Email).Find(&users).Error; err != nil {
 					return ctx.JSON(http.StatusBadGateway, model.JsonResponse{Message: err.Error(), Status: "fail", Data: ""})
 				}
 
@@ -66,8 +64,9 @@ func CheckToken(next echo.HandlerFunc) echo.HandlerFunc {
 					if tokenClaim.ExpiresAt > time.Now().Unix() {
 
 						// TO DO set Data in middleware ctx.Set()
-						ctx.Set("email", tokenClaim.UserId)
+						ctx.Set("user_id", tokenClaim.UserId)
 						ctx.Set("role_id", tokenClaim.RoleId)
+						ctx.Set("email", tokenClaim.Email)
 						return next(ctx)
 					}
 					return ctx.JSON(http.StatusOK, model.JsonResponse{Message: "token expires", Status: "fail", Data: ""})
@@ -102,9 +101,7 @@ func RejectRoleUnderAdmin(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 
 		if len(users) != 0 {
-
 			if roleId == users[0].RoleId {
-
 				// TO DO check Role user Admin
 				var roles []model.Roles
 				if err := db.Table("roles").Where("role_id=?", roleId).Find(&roles).Error; err != nil {

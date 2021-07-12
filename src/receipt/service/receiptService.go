@@ -32,6 +32,7 @@ func (r *receiptRepository) SendSlip(ctx echo.Context) error {
 		return err
 	}
 
+	//validate data
 	if err := ctx.Validate(&bodyReceipt); err != nil {
 		return ctx.JSON(http.StatusBadRequest, model.JsonResponse{Message: err.Error(), Status: "fall", Data: ""})
 	}

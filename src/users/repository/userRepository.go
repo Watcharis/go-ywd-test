@@ -43,13 +43,13 @@ func (query *Mysql) GetRoleIdByRoleName(roleName string) (string, error) {
 	return roleId, nil
 }
 
-func (query *Mysql) InsertUser(data model.UsersCreate) (string, error) {
+func (query *Mysql) RegisterUser(data model.UsersCreate) (string, error) {
 	user_id := uuid.NewV4()
 	sqlCommand := `INSERT INTO users (user_id, email, password, phone, display_name, role_id, create_date) VALUES (?, ?, ?, ?, ? ,?, ?)`
 	if err := query.db.Exec(sqlCommand, user_id, data.Email, data.Password, data.Phone, data.DisplayName, data.RoleId, time.Now()).Error; err != nil {
 		return "", err
 	}
-	return "insert users success", nil
+	return "register users success", nil
 }
 
 func (query *Mysql) ValidateUserLogin(data users.UserRequestLogin) ([]model.Users, error) {

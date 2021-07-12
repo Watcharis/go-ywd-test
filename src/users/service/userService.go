@@ -12,10 +12,11 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type jwtCustomClaims struct {
+type Claims struct {
 	UserId string `json:"user_id"`
 	RoleId string `json:"role_id"`
-	jwt.StandardClaims
+	Email  string `json:"email"`
+	*jwt.StandardClaims
 }
 
 type Usersrepository struct {
@@ -30,10 +31,14 @@ func NewUserService(repository users.UserRepository) *Usersrepository {
 
 func (r *Usersrepository) Register(ctx echo.Context) error {
 
-	bodyUser := new(users.UserRequestRegister)
+	bodyUser := users.UserRequestRegister{}
 
 	if reqbody := ctx.Bind(&bodyUser); reqbody != nil {
 		return ctx.JSON(http.StatusBadRequest, model.JsonResponse{Message: reqbody.Error(), Status: "fall", Data: ""})
+	}
+
+	if err := ctx.Validate(&bodyUser); err != nil {
+		return ctx.JSON(http.StatusBadRequest, model.JsonResponse{Message: err.Error(), Status: "fall", Data: ""})
 	}
 
 	fmt.Println("bodyUser :", bodyUser)
@@ -58,21 +63,27 @@ func (r *Usersrepository) Register(ctx echo.Context) error {
 			RoleId:      getRoleId,
 		}
 
-		r.repository.InsertUser(dataGenUser)
-		return ctx.JSON(http.StatusOK, model.JsonResponse{Message: "register success", Status: "success", Data: ""})
+		register, err := r.repository.RegisterUser(dataGenUser)
+		if err != nil {
+			return ctx.JSON(http.StatusBadGateway, model.JsonResponse{Message: err.Error(), Status: "fail", Data: ""})
+		}
+		return ctx.JSON(http.StatusOK, model.JsonResponse{Message: register, Status: "success", Data: ""})
 	}
 	return ctx.JSON(http.StatusBadRequest, model.JsonResponse{Message: "User is exists", Status: "fail", Data: ""})
 }
 
 func (r *Usersrepository) Login(ctx echo.Context) error {
 
-	bodyUser := new(users.UserRequestLogin)
+	bodyUser := users.UserRequestLogin{}
 
-	if reqbody := ctx.Bind(bodyUser); reqbody != nil {
+	if reqbody := ctx.Bind(&bodyUser); reqbody != nil {
 		// fmt.Println("reqbody :", reqbody)
 		return reqbody
 	}
 
+	if err := ctx.Validate(&bodyUser); err != nil {
+		return ctx.JSON(http.StatusBadRequest, model.JsonResponse{Message: err.Error(), Status: "fall", Data: ""})
+	}
 	// fmt.Println("bodyUser :", bodyUser)
 
 	data := users.UserRequestLogin{
@@ -91,10 +102,11 @@ func (r *Usersrepository) Login(ctx echo.Context) error {
 		// fmt.Println("after 1 hour :", time.Now().Add(time.Hour*1))
 		// gen token JWT
 
-		claims := &jwtCustomClaims{
-			valiDateUser[0].Email,
+		claims := &Claims{
+			valiDateUser[0].UserId,
 			valiDateUser[0].RoleId,
-			jwt.StandardClaims{
+			valiDateUser[0].Email,
+			&jwt.StandardClaims{
 				ExpiresAt: time.Now().Add(time.Hour * 1).Unix(),
 				IssuedAt:  time.Now().Unix(),
 			},
@@ -105,7 +117,7 @@ func (r *Usersrepository) Login(ctx echo.Context) error {
 
 		t, err := token.SignedString([]byte("goywdtest"))
 		if err != nil {
-			return err
+			return ctx.JSON(http.StatusBadGateway, model.JsonResponse{Message: err.Error(), Status: "fail", Data: ""})
 		}
 
 		// fmt.Println("t :", t)
