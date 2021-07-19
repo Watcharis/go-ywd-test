@@ -75,7 +75,7 @@ func InitDatabase(db *gorm.DB) {
 
 		if checkRole == "" {
 
-			gennarateRoles := tx.Exec(`INSERT IGNORE INTO roles (role_id, role_name, role_status) values(?, ?, ?)`, role_id, permission, status)
+			gennarateRoles := tx.Exec(`INSERT IGNORE INTO roles (role_id, role_name, role_status, created_at) values(?, ?, ?, ?)`, role_id, permission, status, time.Now())
 			if gennarateRoles.Error != nil {
 				defer logrus.Errorln("generate error ->", gennarateRoles.Error)
 				tx.Rollback()
@@ -113,6 +113,5 @@ func InitDatabase(db *gorm.DB) {
 			// panic(createAdmin.Error)
 		}
 	}
-
 	tx.Commit()
 }

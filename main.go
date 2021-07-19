@@ -6,6 +6,7 @@ import (
 
 	database "watcharis/ywd-test/database"
 	"watcharis/ywd-test/model"
+	rdc "watcharis/ywd-test/redis"
 
 	"github.com/go-playground/validator"
 	"github.com/joho/godotenv"
@@ -41,8 +42,9 @@ func main() {
 
 	e := echo.New()
 
-	// //TODO Echo validate
+	//TODO Echo register validate
 	e.Validator = &CustomValidator{validator: validator.New()}
+	e.IPExtractor = echo.ExtractIPDirect()
 
 	//TODo CorsOrigin
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
@@ -52,20 +54,33 @@ func main() {
 
 	//TODO GET ENV
 	godotenv.Load(".env")
+
+	//TODO connect Mysql DB
 	db, err := database.ConnectMysqlDB()
 
 	if err != nil {
 		logrus.Errorln("error connect database ->", err.Error())
 	}
 
+	//TODO CREATE TABLE DB
 	database.CreateDb(db)
+
+	//TODO INIT DATA IN DB
 	database.InitDatabase(db)
+
+	//TODO GORM stage migrations
+	// if err := migrate.MigrateDatabase(db, migrate.Table); err != nil {
+	// 	logrus.Errorln("err migrations ->", err.Error())
+	// }
 
 	if db != nil {
 		fmt.Println("db :", *db)
 	}
 
-	// Api sample
+	//TODO Connect Redis
+	rdb := rdc.NewConnectRedis()
+	rct := rdb.ConnectRedis()
+	// Api Example
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")
 	})
@@ -73,7 +88,7 @@ func main() {
 	routerPublich := e.Group("/publice")
 
 	_userrepository := userRepository.NewUserRepository(db)
-	_userservice := userService.NewUserService(_userrepository)
+	_userservice := userService.NewUserService(_userrepository, rct)
 	_userController := userController.NewUserHandle(_userservice)
 	_userController.RouteGroup(routerPublich)
 

@@ -21,7 +21,7 @@ func NewReceiptContrller(service receipt.ReceiptService) *receiptService {
 func (handle receiptService) RouteGroup(e *echo.Group) {
 
 	router := e.Group("/api/v1/receipt")
-	router.Use(middleware.CheckToken, middleware.RejectRoleUnderAdmin)
+	router.Use(middleware.AuthenCheckToken())
 	router.POST("/sendslip", handle.service.SendSlip)
 	router.GET("/getslip", handle.service.AdminGetSlip)
 	router.PUT("/point", handle.service.AdminGiveReceiptPoint)

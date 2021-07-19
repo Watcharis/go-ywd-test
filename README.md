@@ -32,3 +32,32 @@
     step 4 run file main
         - go run main.go
 
+------------------------------------------------------------------------------------------
+# การเขียน file ใน golang มีด้วยกันหลายวิธี
+
+    อันนี้ คือ วิธ๊การเขียน file โดยใช้ "io/ioutil" เเละ "path/filepath"
+
+    หากเรามี file อยู่เเล้ว สามารถทำตาม code ชุดนี้ได้เลย
+
+    // os.Getwd() คือ การเรียก root path ของ dirctory 
+    path, err := os.Getwd()
+	if err != nil {
+	 	log.Println(err)
+	}
+
+	inputFile := filepath.Join(path, "img", <filename>)
+
+    // ioutil.ReadFile() คือ การอ่าน file_input เเละ return ออกมาเป็น []byte
+	dataFile, err := ioutil.ReadFile(inputFile)
+	if err != nil {
+	 	logrus.Errorln("Error: Readfile ->", err)
+	}
+
+	outPutFile := filepath.Join(path, "img", <new filename>)
+
+    // ioutil.WriteFile() คือ การเขียน file
+    if err := ioutil.WriteFile(newPathFile, dataFile, 0644); err != nil {
+	    logrus.Errorln("Error: WriteFile ->", err)
+	}
+
+

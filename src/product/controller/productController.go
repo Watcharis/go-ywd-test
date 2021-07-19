@@ -20,4 +20,5 @@ func (h productService) RouteGroup(e *echo.Group) {
 	router := e.Group("/api/v1/product")
 	router.POST("", h.service.AddProduct)
 	router.GET("", h.service.GetProduct)
+	router.POST("/fileupload", h.service.FileProduct)
 }

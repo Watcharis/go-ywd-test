@@ -20,10 +20,16 @@ services:
       - 8089:8080
     links: 
       - mysql
+  # redis:
+  #   image: "redis:6.2.4-alpine"
+  #   container_name: redis-go-ywd
+  #   ports:
+  #     - 6379:6379
+  #   restart: always
+  
   redis:
-    image: "redis:6.2.4-alpine"
-    container_name: redis-go-ywd
+    image: 'bitnami/redis:latest'
     ports:
       - 6379:6379
-    restart: always
-    
+    environment:
+        - ALLOW_EMPTY_PASSWORD=yes

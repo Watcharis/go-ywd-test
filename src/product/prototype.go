@@ -9,6 +9,7 @@ import (
 type ProductService interface {
 	AddProduct(ctx echo.Context) error
 	GetProduct(ctx echo.Context) error
+	FileProduct(ctx echo.Context) error
 }
 
 type ProductRepository interface {

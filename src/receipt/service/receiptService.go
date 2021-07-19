@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"net/http"
 	"watcharis/ywd-test/model"
 	"watcharis/ywd-test/src/receipt"
@@ -13,10 +12,6 @@ type receiptRepository struct {
 	repository receipt.ReceiptRepository
 }
 
-// type CustomValidator struct {
-// 	validator *validator.Validate
-// }
-
 func NewReceiptService(repository receipt.ReceiptRepository) *receiptRepository {
 	return &receiptRepository{
 		repository: repository,
@@ -24,9 +19,7 @@ func NewReceiptService(repository receipt.ReceiptRepository) *receiptRepository 
 }
 
 func (r *receiptRepository) SendSlip(ctx echo.Context) error {
-
 	var bodyReceipt model.ReceiptRequestBody
-
 	// bind data
 	if err := ctx.Bind(bodyReceipt); err != nil {
 		return err
@@ -37,7 +30,7 @@ func (r *receiptRepository) SendSlip(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, model.JsonResponse{Message: err.Error(), Status: "fall", Data: ""})
 	}
 
-	fmt.Println("bodyReceipt :", bodyReceipt)
+	// fmt.Println("bodyReceipt :", bodyReceipt)
 
 	validateReceiptCode, err := r.repository.FindSlipByReceiptCode(bodyReceipt.ReceiptCode)
 	// fmt.Println("validateReceiptCode :", validateReceiptCode)
@@ -66,12 +59,11 @@ func (r *receiptRepository) SendSlip(ctx echo.Context) error {
 
 func (r *receiptRepository) AdminGetSlip(ctx echo.Context) error {
 	getSlip, err := r.repository.FindAllSlipByStatus()
-	fmt.Println("getSlip :", getSlip)
+	// fmt.Println("getSlip :", getSlip)
 
 	if err != nil {
 		return ctx.JSON(http.StatusBadGateway, model.JsonResponse{Message: err.Error(), Status: "fail", Data: ""})
 	}
-
 	return ctx.JSON(http.StatusOK, model.JsonResponse{Message: "get slip success", Status: "success", Data: getSlip})
 }
 
@@ -125,7 +117,6 @@ func (r *receiptRepository) AdminGiveReceiptPoint(ctx echo.Context) error {
 }
 
 func (r *receiptRepository) GetTotalPointUser(ctx echo.Context) error {
-
 	if userId := ctx.QueryParam("user_id"); userId != "" {
 		callSum, err := r.repository.SumReceiptPoint(userId)
 		if err != nil {
