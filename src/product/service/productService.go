@@ -1,8 +1,10 @@
 package service
 
 import (
+	"encoding/base64"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/textproto"
 	"os"
@@ -14,6 +16,7 @@ import (
 	"watcharis/ywd-test/src/product"
 
 	"github.com/labstack/echo/v4"
+	"github.com/sirupsen/logrus"
 )
 
 type FileHeader struct {
@@ -86,12 +89,8 @@ func (r productRepository) FileProduct(ctx echo.Context) error {
 	if err != nil {
 		return err
 	}
-	// fmt.Println("file :", file)
-	fmt.Println("file_header:", file.Header)
-	fmt.Println("file_name :", file.Filename)
 
 	fileType := strings.Split(file.Header["Content-Type"][0], "/")
-
 	pathCwd, _ := os.Getwd()
 	// Open() คือ การอ่าน file จาก content ของ ctx.FormFile("file")
 	src, err := file.Open()
@@ -101,10 +100,11 @@ func (r productRepository) FileProduct(ctx echo.Context) error {
 	defer src.Close()
 
 	var fileName string
-	if fileType[1] == "jpeg" || fileType[1] == "jpg" {
+	if fileType[1] == "jpeg" || fileType[1] == "jpg" || fileType[1] == "png" {
 		fileName = fmt.Sprintf("%s.%s", strconv.Itoa(int(time.Now().UnixNano())), fileType[1])
 		// Destination
 		pathFile := filepath.Join(pathCwd, "img", fileName)
+		// fmt.Println("pathFile :", pathFile)
 
 		// os.Create() คือ การสร้าง destination ของ file
 		dst, err := os.Create(pathFile)
@@ -116,9 +116,50 @@ func (r productRepository) FileProduct(ctx echo.Context) error {
 		// Copy
 		// os.Copy() คือ การสร้าง file โดยบอก destination ของ file เเละ เเนบ data มา
 		if _, err = io.Copy(dst, src); err != nil {
-			return err
+			return ctx.JSON(http.StatusBadRequest, model.JsonResponse{Message: err.Error(), Status: "fail", Data: ""})
 		}
-		return ctx.File(pathFile)
+
+		// os.Stat() จะทำการ check path file ของ file ที่เรา input
+		// os.IsNotExist() จะรับ error หาก ไม่มี file ที่เราค้นหาจะ return true เเต่ถ้ามีจะ return false
+		if _, err := os.Stat(pathFile); os.IsNotExist(err) {
+			// กรณี ไม่มี file ที่เราค้นหาจะ return true
+			logrus.Errorln("File does not exist ->", os.IsNotExist(err))
+
+			if err := os.Remove(pathFile); err != nil {
+				logrus.Errorln("Remove file fail ->", err)
+			}
+			return ctx.JSON(http.StatusBadRequest, model.JsonResponse{Message: "Create File fail -> File does not exist", Status: "fail", Data: ""})
+		}
+		//มี file
+		dataFile, err := ioutil.ReadFile(pathFile)
+		if err != nil {
+			logrus.Errorln("Error: Readfile ->", err)
+		}
+		// http.DetectContentType() จะทำการ return type file ที่อ่านมา
+		mimeType := http.DetectContentType(dataFile)
+
+		var edcodeByteToBase64 string
+		edcodeByteToBase64 = base64.StdEncoding.EncodeToString(dataFile)
+
+		var imageBase64 string
+		imageBase64 = HeaderMineTypeBase64(mimeType) + edcodeByteToBase64
+
+		var responseJson = map[string]string{
+			"image_base64": imageBase64,
+		}
+		// return ctx.File(pathFile)
+		return ctx.JSON(http.StatusBadRequest, model.JsonResponse{Message: "encode image to base64 success", Status: "success", Data: responseJson})
 	}
 	return ctx.JSON(http.StatusBadRequest, model.JsonResponse{Message: fmt.Sprintf("invalid type file -> %s", fileType[1]), Status: "fail", Data: ""})
+}
+
+func HeaderMineTypeBase64(mimeType string) string {
+	var base64Encoding string
+	switch mimeType {
+	case "image/jpeg":
+		base64Encoding += "data:image/jpeg;base64,"
+	case "image/png":
+		base64Encoding += "data:image/png;base64,"
+	}
+	return base64Encoding
 }
