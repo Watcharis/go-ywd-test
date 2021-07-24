@@ -21,4 +21,5 @@ func (h productService) RouteGroup(e *echo.Group) {
 	router.POST("", h.service.AddProduct)
 	router.GET("", h.service.GetProduct)
 	router.POST("/fileupload", h.service.FileProduct)
+	router.GET("/testcon", h.service.TestConcerency)
 }

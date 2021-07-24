@@ -20,16 +20,31 @@ services:
       - 8089:8080
     links: 
       - mysql
-  # redis:
-  #   image: "redis:6.2.4-alpine"
-  #   container_name: redis-go-ywd
-  #   ports:
-  #     - 6379:6379
-  #   restart: always
-  
+
   redis:
     image: 'bitnami/redis:latest'
     ports:
       - 6379:6379
     environment:
-        - ALLOW_EMPTY_PASSWORD=yes
+      - ALLOW_EMPTY_PASSWORD=yes
+
+  go-ywd-test:
+    image: watcharis/watcharis:go-ywd-test-v0.0.7
+    container_name: go-ywd-test
+    restart: always
+    ports:
+      - 3213:1323
+    environment: 
+      - DBUSER=admin
+      - DBPASSWORD=password
+      - DBHOST=172.17.0.1
+      - DBPORT=3333
+      - DBNAME=go-ywd-test
+      - DBURL=admin:password@tcp(172.17.0.1:3333)/go-ywd-test?charset=utf8mb4&parseTime=True&loc=Local
+      - REDIS_URL=redis:6379
+    links: 
+      - mysql
+      - redis
+    depends_on: 
+      - mysql
+      - redis

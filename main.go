@@ -41,6 +41,8 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 func main() {
 
 	e := echo.New()
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
 
 	//TODO Echo register validate
 	e.Validator = &CustomValidator{validator: validator.New()}
@@ -65,8 +67,11 @@ func main() {
 	//TODO CREATE TABLE DB
 	database.CreateDb(db)
 
-	//TODO INIT DATA IN DB
-	database.InitDatabase(db)
+	//TODO INIT PERMISSION USER IN DB
+	database.InitPermissionUsersInDB(db)
+
+	//TODO INIT ADMIN IN DB
+	database.CreateAdminDB(db)
 
 	//TODO GORM stage migrations
 	// if err := migrate.MigrateDatabase(db, migrate.Table); err != nil {
@@ -74,7 +79,7 @@ func main() {
 	// }
 
 	if db != nil {
-		fmt.Println("db :", *db)
+		fmt.Println("db :", db)
 	}
 
 	//TODO Connect Redis

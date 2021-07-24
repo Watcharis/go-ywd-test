@@ -2,7 +2,6 @@ package database
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"watcharis/ywd-test/model"
@@ -12,81 +11,65 @@ import (
 	"gorm.io/gorm"
 )
 
-func getRoleIdByRoleName(db *gorm.DB) (string, error) {
-	selectRoles := `SELECT roles.role_id FROM roles WHERE role_name=?`
-	rows, err := db.Raw(selectRoles, "admin").Rows()
-	defer rows.Close()
-	if err != nil {
-		logrus.Errorln(err.Error())
-	}
-	var roles string
-	for rows.Next() {
-		rows.Scan(&roles)
-	}
-	return roles, nil
-}
-
-func getRoleByRoleName(db *gorm.DB, permission string) (string, error) {
-	selectRoles := `SELECT roles.role_name FROM roles WHERE role_name=?`
-	rows, err := db.Raw(selectRoles, permission).Rows()
-	defer rows.Close()
-	if err != nil {
-		logrus.Errorln(err.Error())
-	}
-	var roles string
-	for rows.Next() {
-		rows.Scan(&roles)
-	}
-	return roles, nil
-}
-
-func getAllRole(db *gorm.DB) ([]model.Roles, error) {
+func getRoleIdByRoleName(db *gorm.DB) ([]model.Roles, error) {
+	tx := db.Begin()
 	var roles []model.Roles
-	selectRoles := `SELECT * FROM roles`
-	if err := db.Raw(selectRoles).Scan(&roles).Error; err != nil {
+	if err := tx.Table("roles").Where("role_name=?", "admin").Find(&roles).Error; err != nil {
 		return nil, err
 	}
+	tx.Commit()
+	return roles, nil
+}
+
+func getRoleByRoleName(db *gorm.DB, permission string) ([]model.Roles, error) {
+	tx := db.Begin()
+	var roles []model.Roles
+	if err := tx.Table("roles").Where("role_name=?", permission).Find(&roles).Error; err != nil {
+		return nil, err
+	}
+	tx.Commit()
 	return roles, nil
 }
 
 func getUserAdminByEmail(db *gorm.DB) ([]model.Users, error) {
+	tx := db.Begin()
 	var users []model.Users
 	selectUsers := `SELECT * FROM users WHERE email=?`
-	if err := db.Raw(selectUsers, "admin@admin.com").Scan(&users).Error; err != nil {
+	if err := tx.Raw(selectUsers, "admin@admin.com").Scan(&users).Error; err != nil {
 		return nil, err
 	}
+	tx.Commit()
 	return users, nil
 }
 
-func InitDatabase(db *gorm.DB) {
-
-	storePermission := []string{"admin", "user"}
-	role_id := uuid.NewV4()
-	status := 1
+func InitPermissionUsersInDB(db *gorm.DB) {
 	tx := db.Begin()
+	storePermission := []string{"admin", "user"}
+	status := 1
 
 	for _, permission := range storePermission {
-
 		checkRole, err := getRoleByRoleName(db, permission)
-
 		if err != nil {
 			logrus.Errorln("getRoleByRoleName ->", err.Error())
 		}
 
-		if checkRole == "" {
-
-			gennarateRoles := tx.Exec(`INSERT IGNORE INTO roles (role_id, role_name, role_status, created_at) values(?, ?, ?, ?)`, role_id, permission, status, time.Now())
+		if len(checkRole) == 0 {
+			gennarateRoles := tx.Exec(`INSERT IGNORE INTO roles (role_id, role_name, role_status, create_date) values(?, ?, ?, ?)`, uuid.NewV4(), permission, status, time.Now())
 			if gennarateRoles.Error != nil {
-				defer logrus.Errorln("generate error ->", gennarateRoles.Error)
+				logrus.Errorln("generate error ->", gennarateRoles.Error)
 				tx.Rollback()
 				// panic(gennarateRoles.Error)
 			}
-
 			status = status - 1
 		} else {
 			logrus.Warn("warning db table roles -> duplicate roles in DB")
 		}
 	}
+	tx.Commit()
+}
+
+func CreateAdminDB(db *gorm.DB) {
+	tx := db.Begin()
 
 	//TODO Insert Admin
 	getUsers, err := getUserAdminByEmail(db)
@@ -95,20 +78,18 @@ func InitDatabase(db *gorm.DB) {
 	}
 
 	if len(getUsers) > 0 {
-		fmt.Println(errors.New("Users is exists"))
+		logrus.Errorln(errors.New("Users is exists"))
 	} else {
 		getRoleId, err := getRoleIdByRoleName(db)
 		if err != nil {
 			logrus.Errorln("getRoleByRoleName ->", err.Error())
 		}
-		currentTime := time.Now()
-
-		createAdmin := db.Exec(
+		createAdmin := tx.Exec(
 			`INSERT IGNORE INTO users (user_id, email, password, phone, display_name, role_id, create_date) values(?, ?, ?, ?, ?, ?, ?)`,
-			uuid.NewV4(), "admin@admin.com", "admin", "0999999999", "admin", getRoleId, currentTime,
+			uuid.NewV4(), "admin@admin.com", "admin", "0999999999", "admin", getRoleId[0].RoleId, time.Now(),
 		)
 		if createAdmin.Error != nil {
-			defer logrus.Errorln("createAdmin error ->", createAdmin.Error)
+			logrus.Errorln("createAdmin error ->", createAdmin.Error)
 			tx.Rollback()
 			// panic(createAdmin.Error)
 		}

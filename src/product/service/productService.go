@@ -28,17 +28,17 @@ type FileHeader struct {
 	tmpfile string
 }
 
-type productRepository struct {
+type ProductRepository struct {
 	repository product.ProductRepository
 }
 
-func NewProductService(repository product.ProductRepository) *productRepository {
-	return &productRepository{
+func NewProductService(repository product.ProductRepository) *ProductRepository {
+	return &ProductRepository{
 		repository: repository,
 	}
 }
 
-func (r productRepository) AddProduct(ctx echo.Context) error {
+func (r ProductRepository) AddProduct(ctx echo.Context) error {
 	bodyProduct := model.ProductRequest{}
 	if reqbody := ctx.Bind(&bodyProduct); reqbody != nil {
 		// fmt.Println("reqbody :", reqbody)
@@ -79,12 +79,12 @@ func (r productRepository) AddProduct(ctx echo.Context) error {
 	}
 }
 
-func (r productRepository) GetProduct(ctx echo.Context) error {
+func (r ProductRepository) GetProduct(ctx echo.Context) error {
 	getProduct := r.repository.FindAllProduct()
 	return ctx.JSON(http.StatusOK, model.JsonResponse{Message: "get product success", Status: "success", Data: getProduct})
 }
 
-func (r productRepository) FileProduct(ctx echo.Context) error {
+func (r ProductRepository) FileProduct(ctx echo.Context) error {
 	file, err := ctx.FormFile("file")
 	if err != nil {
 		return err
@@ -155,11 +155,11 @@ func (r productRepository) FileProduct(ctx echo.Context) error {
 
 func HeaderMineTypeBase64(mimeType string) string {
 	var base64Encoding string
-	switch mimeType {
+	switch base64Encoding = mimeType; base64Encoding {
 	case "image/jpeg":
-		base64Encoding += "data:image/jpeg;base64,"
+		base64Encoding = "data:image/jpeg;base64,"
 	case "image/png":
-		base64Encoding += "data:image/png;base64,"
+		base64Encoding = "data:image/png;base64,"
 	}
 	return base64Encoding
 }

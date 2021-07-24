@@ -1,6 +1,8 @@
 package redis
 
 import (
+	"os"
+
 	"github.com/go-redis/redis"
 	"github.com/sirupsen/logrus"
 )
@@ -20,8 +22,9 @@ func NewConnectRedis() *Redis {
 }
 
 func (re *Redis) ConnectRedis() *redis.Client {
+	url := os.Getenv("REDIS_URL")
 	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     url,
 		Password: "",
 		DB:       0,
 	})

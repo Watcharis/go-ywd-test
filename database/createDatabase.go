@@ -7,13 +7,14 @@ import (
 )
 
 func CreateDb(db *gorm.DB) {
-
-	sqlRoles := db.Exec(
+	tx := db.Begin()
+	sqlRoles := tx.Exec(
 		`
 			CREATE TABLE IF NOT EXISTS roles (
 				role_id varchar(255) NOT NULL,
 				role_name varchar(255) NOT NULL,
 				role_status int NOT NULL,
+				create_date DATETIME,
 				PRIMARY KEY(role_id)
 			)
 		`,
@@ -23,7 +24,7 @@ func CreateDb(db *gorm.DB) {
 		panic(sqlRoles.Error)
 	}
 
-	sqlUser := db.Exec(
+	sqlUser := tx.Exec(
 		`
 			CREATE TABLE IF NOT EXISTS users (
 				user_id varchar(255) NOT NULL ,
@@ -44,7 +45,7 @@ func CreateDb(db *gorm.DB) {
 		panic(sqlUser.Error)
 	}
 
-	sqlProduct := db.Exec(
+	sqlProduct := tx.Exec(
 		`
 		CREATE TABLE IF NOT EXISTS products (
 			product_id varchar(255) NOT NULL,
@@ -61,7 +62,7 @@ func CreateDb(db *gorm.DB) {
 		panic(sqlProduct.Error)
 	}
 
-	sqlReceipt := db.Exec(
+	sqlReceipt := tx.Exec(
 		`
 		CREATE TABLE IF NOT EXISTS receipt (
 			receipt_id varchar(255) NOT NULL ,
@@ -82,7 +83,7 @@ func CreateDb(db *gorm.DB) {
 		panic(sqlReceipt.Error)
 	}
 
-	sqlUserProduct := db.Exec(
+	sqlUserProduct := tx.Exec(
 		`
 		CREATE TABLE IF NOT EXISTS user_product (
 			user_product_id varchar(255) NOT NULL ,
@@ -101,4 +102,5 @@ func CreateDb(db *gorm.DB) {
 		fmt.Printf("error : %s", sqlUserProduct.Error)
 		panic(sqlUserProduct.Error)
 	}
+	tx.Commit()
 }
