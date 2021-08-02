@@ -57,7 +57,8 @@ func (r *Usersrepository) Exchange(ctx echo.Context) error {
 					return ctx.JSON(http.StatusOK, model.JsonResponse{Message: "exchange success", Status: "success", Data: ""})
 				}
 			}
-			return ctx.JSON(http.StatusBadGateway, model.JsonResponse{Message: "point not enought exchange fail", Status: "fail", Data: ""})
+			//คำนวณ เเต้มทั้งหมด
+			return ctx.JSON(http.StatusBadGateway, model.JsonResponse{Message: "point not enought exchange fail", Status: "fail", Data: totalPoint})
 		} else {
 			sumAllPointProductExchange := calculateProduct(checkExchange)
 			// fmt.Println("sumAllPointProductExchange :", sumAllPointProductExchange)

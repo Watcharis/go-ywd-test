@@ -12,9 +12,10 @@ type Redis struct {
 }
 
 func NewConnectRedis() *Redis {
+	addrRedis := os.Getenv("REDIS_URL")
 	return &Redis{
 		Client: redis.NewClient(&redis.Options{
-			Addr:     "localhost:6379",
+			Addr:     addrRedis,
 			Password: "",
 			DB:       0,
 		}),
@@ -22,13 +23,7 @@ func NewConnectRedis() *Redis {
 }
 
 func (re *Redis) ConnectRedis() *redis.Client {
-	url := os.Getenv("REDIS_URL")
-	client := redis.NewClient(&redis.Options{
-		Addr:     url,
-		Password: "",
-		DB:       0,
-	})
-
+	client := re.Client
 	pong, err := client.Ping().Result()
 	logrus.Info("pong redis ->", pong)
 	if err != nil {

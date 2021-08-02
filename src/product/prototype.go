@@ -21,7 +21,7 @@ type ProductRepository interface {
 
 var UrlPython = []string{
 	"http://localhost:4567/nodepromise1",
-	"http://127.0.0.1:4567/nodepromise2",
+	"http://localhost:4567/nodepromise2",
 	"http://localhost:4567/nodepromise3",
 	"http://localhost:4567/nodepromise4",
 }

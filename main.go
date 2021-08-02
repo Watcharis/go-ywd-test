@@ -25,6 +25,9 @@ import (
 	receiptController "watcharis/ywd-test/src/receipt/controller"
 	receiptRepository "watcharis/ywd-test/src/receipt/repository"
 	receiptService "watcharis/ywd-test/src/receipt/service"
+
+	lineController "watcharis/ywd-test/src/line/controller"
+	lineService "watcharis/ywd-test/src/line/service"
 )
 
 type CustomValidator struct {
@@ -106,6 +109,10 @@ func main() {
 	_receiptservice := receiptService.NewReceiptService(_receiptRepository)
 	_receiptcontroller := receiptController.NewReceiptContrller(_receiptservice)
 	_receiptcontroller.RouteGroup(routerPublich)
+
+	_lineService := lineService.NewLineService()
+	_lineController := lineController.NewLineController(_lineService)
+	_lineController.RouteGroup(routerPublich)
 
 	e.Logger.Fatal(e.Start(":1323"))
 }

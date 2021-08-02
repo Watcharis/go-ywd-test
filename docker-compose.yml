@@ -29,7 +29,7 @@ services:
       - ALLOW_EMPTY_PASSWORD=yes
 
   go-ywd-test:
-    image: watcharis/watcharis:go-ywd-test-v0.0.7
+    image: watcharis/watcharis:go-ywd-test-v0.0.9
     container_name: go-ywd-test
     restart: always
     ports:
@@ -42,9 +42,15 @@ services:
       - DBNAME=go-ywd-test
       - DBURL=admin:password@tcp(172.17.0.1:3333)/go-ywd-test?charset=utf8mb4&parseTime=True&loc=Local
       - REDIS_URL=redis:6379
+      - FLASK_URL_CONONE=http://172.17.0.1:4567/nodepromise1
+      - FLASK_URL_CONTWO=http://172.17.0.1:4567/nodepromise2
+      - FLASK_URL_CONTHREE=http://172.17.0.1:4567/nodepromise3
+      - FLASK_URL_CONFOUR=http://172.17.0.1:4567/nodepromise4
     links: 
       - mysql
       - redis
     depends_on: 
       - mysql
       - redis
+      - adminer
+    # network_mode: bridge

@@ -3,9 +3,11 @@ package service
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"watcharis/ywd-test/model"
 	"watcharis/ywd-test/src/product"
 
@@ -26,14 +28,14 @@ func SendRequestMethodPOST(url string, c chan model.JsonResponse, e chan error) 
 	if err != nil {
 		logrus.Errorln("Err request post ->", err)
 	}
-	// fmt.Println("resp :", resp.Body)
+	fmt.Println("resp :", resp.Body)
 	defer resp.Body.Close()
 
 	bodyPost, errPost := ioutil.ReadAll(resp.Body)
 	if errPost != nil {
 		log.Fatal(errPost)
 	}
-	// fmt.Println("bodyPost :", bodyPost)
+	fmt.Println("bodyPost :", string(bodyPost))
 
 	var res model.JsonResponse
 	if err := json.Unmarshal(bodyPost, &res); err != nil {
@@ -48,7 +50,19 @@ func (r ProductRepository) TestConcerency(ctx echo.Context) error {
 	c := make(chan model.JsonResponse)
 	e := make(chan error)
 
-	for _, v := range product.UrlPython {
+	FlaskUrlConOne := os.Getenv("FLASK_URL_CONONE")
+	FlaskUrlConTwo := os.Getenv("FLASK_URL_CONTWO")
+	FlaskUrlConThree := os.Getenv("FLASK_URL_CONTHREE")
+	FlaskUrlConFour := os.Getenv("FLASK_URL_CONFOUR")
+	// fmt.Println("product.UrlPython :", product.UrlPython)
+	// fmt.Println("url test:", FlaskUrlConOne)
+	urlFlask := []string{
+		FlaskUrlConOne,
+		FlaskUrlConTwo,
+		FlaskUrlConThree,
+		FlaskUrlConFour,
+	}
+	for _, v := range urlFlask {
 		go SendRequestMethodPOST(v, c, e)
 	}
 	// fmt.Println("result :", result)
@@ -91,6 +105,5 @@ func (r ProductRepository) TestConcerency(ctx echo.Context) error {
 		}
 		finalResult = append(finalResult, response)
 	}
-
-	return ctx.JSON(http.StatusOK, model.JsonResponse{Message: "data", Status: "success", Data: ""})
+	return ctx.JSON(http.StatusOK, model.JsonResponse{Message: "data", Status: "success", Data: finalResult})
 }
