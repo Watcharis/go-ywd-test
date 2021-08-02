@@ -8,6 +8,8 @@ import (
 	"watcharis/ywd-test/model"
 	rdc "watcharis/ywd-test/redis"
 
+	h "watcharis/ywd-test/helper"
+
 	"github.com/go-playground/validator"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
@@ -42,6 +44,12 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 }
 
 func main() {
+
+	ages := []int{6, 5, 83, 5, 3, 18}
+	test := h.TwoOldestAges(ages)
+	test1 := h.SortTwoMoreThanValues(ages)
+	fmt.Println("test :", test)
+	fmt.Println("test1 :", test1)
 
 	e := echo.New()
 	e.Use(middleware.Logger())

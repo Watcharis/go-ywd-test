@@ -29,12 +29,14 @@ func replyMessage(message line.ReplyMessage) (string, error) {
 	if err != nil {
 		logrus.Errorln("Error json.Marshal() ->", err)
 	}
+
 	url := "https://api.line.me/v2/bot/message/reply"
 	ChannelToken := os.Getenv("CHANNELTOKEN")
 	var jsonStr = []byte(jsonData)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Add("Authorization", "Bearer "+ChannelToken)
+
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -53,11 +55,29 @@ func replyMessage(message line.ReplyMessage) (string, error) {
 	return "", nil
 }
 
+func validateSignature(channelSecret, signature string, body []byte) bool {
+	decoded, err := base64.StdEncoding.DecodeString(signature)
+	if err != nil {
+		logrus.Errorln("Error decoded signature from header ->", err)
+		return false
+	}
+	hash := hmac.New(sha256.New, []byte(channelSecret))
+
+	_, err = hash.Write(body)
+	if err != nil {
+		return false
+	}
+
+	// Compare decoded signature and `hash.Sum(nil)` by using `hmac.Equal`
+	//hmac.Equal(decoded, hash.Sum(nil))
+	return hmac.Equal(decoded, hash.Sum(nil))
+}
+
 func (l service) Webhook(ctx echo.Context) error {
 
 	Line := line.LineMessage{}
-	header := ctx.Request().Header
-	fmt.Println("header :", header)
+	// header := ctx.Request().Header
+	// fmt.Println("header :", header)
 
 	if err := ctx.Bind(&Line); err != nil {
 		logrus.Errorln("Error bind data webhook ->", err)
@@ -67,28 +87,18 @@ func (l service) Webhook(ctx echo.Context) error {
 		return err
 	}
 
-	// fmt.Println(ctx.Request().Body)
+	// fmt.Println("ctx.Request().Body ->", ctx.Request().Body)
 	body, err := ioutil.ReadAll(ctx.Request().Body)
 	if err != nil {
-		logrus.Errorln("Error : ")
-	}
-	fmt.Println("body :", body)
-
-	signature := ctx.Request().Header.Get("x-line-signature")
-	fmt.Println("signature :", signature)
-	decoded, err := base64.StdEncoding.DecodeString(signature)
-	if err != nil {
-		logrus.Errorln("Error decoded signature from header ->", err)
+		logrus.Errorln("Error : read body ->", err)
 	}
 
-	hash := hmac.New(sha256.New, []byte("83d8f32b73ea4c16285000eb25c823e3"))
-	hash.Write(body)
-
-	//// Compare decoded signature and `hash.Sum(nil)` by using `hmac.Equal`
-	compare := hmac.Equal(decoded, hash.Sum(nil))
-	fmt.Println("compare :", compare)
-
-	fmt.Println("Line :", Line.Events[0].ReplyToken)
+	// ติด ***bug*** ยังไม่สามารถ หาวิธี validate signature ที่ถูกต้องได้
+	channelSecret := os.Getenv("CHANNELSECRET")
+	signature := ctx.Request().Header.Get("X-Line-Signature")
+	if !validateSignature(channelSecret, signature, body) {
+		return ctx.JSON(http.StatusOK, model.JsonResponse{Message: "false", Status: "fail", Data: ""})
+	}
 
 	message := line.ReplyMessage{
 		ReplyToken: Line.Events[0].ReplyToken,

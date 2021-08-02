@@ -4,6 +4,7 @@ import "github.com/labstack/echo/v4"
 
 type LineService interface {
 	Webhook(ctx echo.Context) error
+	// Webhook(r *http.Request) error
 }
 
 type LineMessage struct {
