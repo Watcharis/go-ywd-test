@@ -61,4 +61,11 @@
 	}
 
 --------------------------------------------------------------------------------------------
-# golang หาก deploy เป็น container เเล้ว
+# golang deploy เป็น container 
+
+    หาก deploy golang เป็น container 
+
+    ถ้า ต้องการ ยิง container หากันระหว่าง service จะต้องใช้ ip ที่เป็น network ของ docker0
+    
+    เเทนการใช้ localhost
+
