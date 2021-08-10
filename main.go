@@ -14,6 +14,8 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/sirupsen/logrus"
 
+	h "watcharis/ywd-test/helper"
+
 	userController "watcharis/ywd-test/src/users/controller"
 	userRepository "watcharis/ywd-test/src/users/repository"
 	userService "watcharis/ywd-test/src/users/service"
@@ -43,11 +45,13 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 
 func main() {
 
-	// ages := []int{6, 5, 83, 5, 3, 18}
+	ages := []int{6, 5, 83, 5, 3, 18} //18 3  5 83 5 6
 	// test := h.TwoOldestAges(ages)
 	// test1 := h.SortTwoMoreThanValues(ages)
 	// fmt.Println("test :", test)
 	// fmt.Println("test1 :", test1)
+	test2 := h.ReversArray(ages)
+	fmt.Println("test2 :", test2)
 
 	e := echo.New()
 	e.Use(middleware.Logger())

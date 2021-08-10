@@ -32,3 +32,14 @@ func SortTwoMoreThanValues(ages []int) [2]int {
 	res = [2]int{ages[len(ages)-2], ages[len(ages)-1]}
 	return res
 }
+
+func ReversArray(ages []int) []int {
+	var res []int
+	var n int = len(ages) - 1
+	for n >= 0 {
+		temp := ages[n]
+		res = append(res, temp)
+		n -= 1
+	}
+	return res
+}
