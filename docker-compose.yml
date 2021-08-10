@@ -2,6 +2,7 @@ version: '3.1'
 services: 
   mysql:
     image: mysql
+    platform: linux/amd64
     container_name: msql
     command: mysqld --user=root
     ports:
