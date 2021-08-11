@@ -33,14 +33,13 @@ func SortTwoMoreThanValues(ages []int) [2]int {
 	return res
 }
 
-func FindDuplicateNumber(data []int) []int {
-	var duplicate []int
-	for i := 0; i < len(data); i++ {
-		for n := 0; n < i; n++ {
-			if data[i] == data[n] {
-				duplicate = append(duplicate, data[i])
-			}
-		}
+func ReversArray(ages []int) []int {
+	var res []int
+	var n int = len(ages) - 1
+	for n >= 0 {
+		temp := ages[n]
+		res = append(res, temp)
+		n -= 1
 	}
-	return duplicate
+	return res
 }
