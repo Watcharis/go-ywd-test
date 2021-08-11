@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	database "watcharis/ywd-test/database"
+	h "watcharis/ywd-test/helper"
 	"watcharis/ywd-test/model"
 	rdc "watcharis/ywd-test/redis"
 
@@ -43,13 +44,15 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 
 func main() {
 
-	// ages := []int{6, 5, 83, 5, 3, 18} //18 3  5 83 5 6
+	ages := []int{6, 5, 83, 5, 3, 18} //18 3  5 83 5 6
 	// test := h.TwoOldestAges(ages)
 	// test1 := h.SortTwoMoreThanValues(ages)
 	// fmt.Println("test :", test)
 	// fmt.Println("test1 :", test1)
 	// test2 := h.ReversArray(ages)
 	// fmt.Println("test2 :", test2)
+	test3 := h.FindDuplicateNumber(ages)
+	fmt.Println("test3 :", test3)
 
 	e := echo.New()
 	e.Use(middleware.Logger())

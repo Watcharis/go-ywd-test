@@ -43,3 +43,15 @@ func ReversArray(ages []int) []int {
 	}
 	return res
 }
+
+func FindDuplicateNumber(ages []int) []int {
+	var duplicate []int
+	for i := 0; i < len(ages); i++ {
+		for n := 0; n < i; n++ {
+			if ages[i] == ages[n] {
+				duplicate = append(duplicate, ages[i])
+			}
+		}
+	}
+	return ReversArray(duplicate)
+}
