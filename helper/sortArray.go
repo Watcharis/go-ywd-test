@@ -32,3 +32,15 @@ func SortTwoMoreThanValues(ages []int) [2]int {
 	res = [2]int{ages[len(ages)-2], ages[len(ages)-1]}
 	return res
 }
+
+func FindDuplicateNumber(data []int) []int {
+	var duplicate []int
+	for i := 0; i < len(data); i++ {
+		for n := 0; n < i; n++ {
+			if data[i] == data[n] {
+				duplicate = append(duplicate, data[i])
+			}
+		}
+	}
+	return duplicate
+}
